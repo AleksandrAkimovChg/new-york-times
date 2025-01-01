@@ -8,15 +8,15 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication(exclude = {
-		DataSourceAutoConfiguration.class,
-		DataSourceTransactionManagerAutoConfiguration.class,
-		HibernateJpaAutoConfiguration.class
+        DataSourceAutoConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class,
+        HibernateJpaAutoConfiguration.class
 })
 @EnableCaching
 public class NewYorkTimesApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(NewYorkTimesApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(NewYorkTimesApplication.class, args);
+    }
 
 }
