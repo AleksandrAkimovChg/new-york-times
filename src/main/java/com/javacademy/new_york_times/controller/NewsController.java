@@ -1,6 +1,7 @@
 package com.javacademy.new_york_times.controller;
 
 import com.javacademy.new_york_times.dto.NewsDto;
+import com.javacademy.new_york_times.dto.NewsPageDto;
 import com.javacademy.new_york_times.exception.NewsNotFoundAuthorException;
 import com.javacademy.new_york_times.exception.NewsNotFoundException;
 import com.javacademy.new_york_times.exception.NewsNotFoundTextException;
@@ -31,7 +32,7 @@ public class NewsController {
 
     @PostMapping
     @CacheEvict(value = "newsByPage", allEntries = true)
-    public ResponseEntity<?> createNewsItem(@RequestBody NewsDto newsDto) {
+    public ResponseEntity<String> createNewsItem(@RequestBody NewsDto newsDto) {
         try {
             newsService.save(newsDto);
             return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -47,11 +48,11 @@ public class NewsController {
                     @CacheEvict(value = "newsByPage", allEntries = true)
             }
     )
-    public ResponseEntity<?> deleteNewsById(@PathVariable Integer id) {
+    public ResponseEntity<Boolean> deleteNewsById(@PathVariable Integer id) {
         if (newsService.deleteByNumber(id)) {
             return ResponseEntity.ok(true);
         }
-        return ResponseEntity.badRequest().body(false);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
     }
 
     @GetMapping("/{id}")
@@ -60,13 +61,13 @@ public class NewsController {
         try {
             return ResponseEntity.ok(newsService.findByNumber(id));
         } catch (NewsNotFoundException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
     }
 
     @GetMapping
     @Cacheable(value = "newsByPage")
-    public ResponseEntity<?> getNews(@RequestParam Integer page) {
+    public ResponseEntity<NewsPageDto<NewsDto>> getNews(@RequestParam Integer page) {
         return ResponseEntity.ok(newsService.findAll(page));
     }
 
@@ -77,31 +78,31 @@ public class NewsController {
                     @CacheEvict(value = "newsByPage", allEntries = true)
             }
     )
-    public ResponseEntity<?> patchNews(@PathVariable Integer id, @RequestBody NewsDto newDto) {
+    public ResponseEntity<String> patchNews(@PathVariable Integer id, @RequestBody NewsDto newDto) {
         try {
             NewsDto oldDto = newsService.findByNumber(id);
             newsService.updateForPatch(oldDto, newDto);
             return ResponseEntity.ok().body("Обновлено");
         } catch (NewsNotFoundException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
     }
 
     @GetMapping("/{id}/text")
-    public ResponseEntity<?> getTextNewsById(@PathVariable Integer id) {
+    public ResponseEntity<String> getTextNewsById(@PathVariable Integer id) {
         try {
             return ResponseEntity.ok(newsService.getNewsText(id));
         } catch (NewsNotFoundTextException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
     }
 
     @GetMapping("/{id}/author")
-    public ResponseEntity<?> getAuthorNewsById(@PathVariable Integer id) {
+    public ResponseEntity<String> getAuthorNewsById(@PathVariable Integer id) {
         try {
             return ResponseEntity.ok(newsService.getNewsAuthor(id));
         } catch (NewsNotFoundAuthorException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
     }
 }
