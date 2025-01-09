@@ -33,20 +33,15 @@ public class NewsService {
         newsRepository.save(newsMapper.toEntity(dto));
     }
 
-
-    public List<NewsDto> findAll() {
-        return newsMapper.toDtos(newsRepository.findAll());
-    }
-
     public NewsPageDto<NewsDto> findAll(int pageNumber) {
-        List<NewsDto> newsDtoList = findAll();
-        int totalPages = (int) Math.ceil(newsDtoList.size() * 1.00 / PAGE_SIZE);
+        List<NewsEntity> newsEntityList = newsRepository.findAll();
+        int totalPages = (int) Math.ceil(newsEntityList.size() * 1.00 / PAGE_SIZE);
         if (totalPages < pageNumber) {
             throw new NewsNotFoundException(NO_NEWS_WITH_PAGE_NUMBER);
         }
-        List<NewsDto> newsDtoListByPage = newsDtoList.stream()
-                .sorted(Comparator.comparing(NewsDto::getNumber))
-                .skip(PAGE_SIZE * pageNumber).limit(PAGE_SIZE).toList();
+        List<NewsDto> newsDtoListByPage = newsMapper.toDtos(newsEntityList.stream()
+                .sorted(Comparator.comparing(NewsEntity::getNumber))
+                .skip(PAGE_SIZE * pageNumber).limit(PAGE_SIZE).toList());
 
         return new NewsPageDto<>(newsDtoListByPage, totalPages,
                 pageNumber + COUNT_PAGE_NUMBER_WITHOUT_ZERO, PAGE_SIZE, newsDtoListByPage.size());
@@ -61,7 +56,7 @@ public class NewsService {
         return newsRepository.deleteByNumber(number);
     }
 
-    public void update(NewsDto dto) {
+    private void update(NewsDto dto) {
         newsRepository.update(newsMapper.toEntity(dto));
     }
 

@@ -125,7 +125,7 @@ public class NewsControllerTest {
                 .delete(PATH_TEMPLATE_FOR_ID, NUMBER_NEWS_OUT_OF_SCOPE)
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .extract()
                 .body()
                 .as(Boolean.class);
@@ -159,7 +159,7 @@ public class NewsControllerTest {
                 .get(PATH_TEMPLATE_FOR_ID, NUMBER_NEWS_OUT_OF_SCOPE)
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .body(equalTo("Нет новости с таким номером"));
     }
 
@@ -233,7 +233,7 @@ public class NewsControllerTest {
                 .patch(PATH_TEMPLATE_FOR_ID, NUMBER_NEWS_OUT_OF_SCOPE)
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .body(equalTo("Нет новости с таким номером"));
     }
 
@@ -259,7 +259,7 @@ public class NewsControllerTest {
                 .get(PATH_TEMPLATE_FOR_NEWS_TEXT, NUMBER_NEWS_OUT_OF_SCOPE)
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .body(equalTo("Нет новости с таким номером либо текст новости отсутствует"));
     }
 
@@ -285,7 +285,7 @@ public class NewsControllerTest {
                 .get(PATH_TEMPLATE_FOR_NEWS_AUTHOR, NUMBER_NEWS_OUT_OF_SCOPE)
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .statusCode(HttpStatus.NOT_FOUND.value())
                 .body(equalTo("Нет новости с таким номером либо автор новости отсутствует"));
     }
 }
