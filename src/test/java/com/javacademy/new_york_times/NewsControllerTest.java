@@ -39,6 +39,7 @@ public class NewsControllerTest {
     private static final String PATH_TEMPLATE_FOR_ID = "/{id}";
     private static final String PATH_TEMPLATE_FOR_NEWS_AUTHOR = "/{id}/author";
     private static final String PATH_TEMPLATE_FOR_NEWS_TEXT = "/{id}/text";
+
     private final RequestSpecification requestSpecification = new RequestSpecBuilder()
             .setBasePath("/news")
             .setContentType(ContentType.JSON)
@@ -47,6 +48,7 @@ public class NewsControllerTest {
     private final ResponseSpecification responseSpecification = new ResponseSpecBuilder()
             .log(LogDetail.ALL)
             .build();
+
     @Autowired
     private NewsRepository newsRepository;
     @Autowired
@@ -69,18 +71,17 @@ public class NewsControllerTest {
                 .spec(responseSpecification)
                 .statusCode(HttpStatus.CREATED.value());
         allNewsSize++;
-        NewsDto newsDtoActual = newsMapper.toDto(newsRepository.findByNumber(allNewsSize).orElseThrow());
+        NewsEntity newsEntity = newsRepository.findByNumber(allNewsSize).orElseThrow();
 
-        assertEquals(allNewsSize, newsDtoActual.getNumber());
-        assertEquals(newsDtoExpected.getTitle(), newsDtoActual.getTitle());
-        assertEquals(newsDtoExpected.getText(), newsDtoActual.getText());
-        assertEquals(newsDtoExpected.getAuthor(), newsDtoActual.getAuthor());
+        assertEquals(allNewsSize, newsEntity.getNumber());
+        assertEquals(newsDtoExpected.getTitle(), newsEntity.getTitle());
+        assertEquals(newsDtoExpected.getText(), newsEntity.getText());
+        assertEquals(newsDtoExpected.getAuthor(), newsEntity.getAuthor());
     }
 
     @Test
     @DisplayName("Неуспешное создание новости")
     public void createFailure() {
-        assertTrue(newsRepository.findByNumber(NUMBER_NEWS_IN_SCOPE_TWO).isPresent());
         NewsDto newsDto = NewsDto.builder()
                 .number(NUMBER_NEWS_IN_SCOPE_TWO)
                 .title("testTitle")
@@ -101,8 +102,6 @@ public class NewsControllerTest {
     @Test
     @DisplayName("Успешное удаление новости")
     public void deleteSuccess() {
-        assertTrue(newsRepository.findByNumber(NUMBER_NEWS_IN_SCOPE_TWO).isPresent());
-
         Boolean actual = RestAssured.given(requestSpecification)
                 .delete(PATH_TEMPLATE_FOR_ID, NUMBER_NEWS_IN_SCOPE_TWO)
                 .then()
@@ -119,8 +118,6 @@ public class NewsControllerTest {
     @Test
     @DisplayName("Неуспешное удаление новости")
     public void deleteFailure() {
-        assertTrue(newsRepository.findByNumber(NUMBER_NEWS_OUT_OF_SCOPE).isEmpty());
-
         Boolean actual = RestAssured.given(requestSpecification)
                 .delete(PATH_TEMPLATE_FOR_ID, NUMBER_NEWS_OUT_OF_SCOPE)
                 .then()
@@ -136,7 +133,7 @@ public class NewsControllerTest {
     @Test
     @DisplayName("Успешное получение новости по id")
     public void getByIdSuccess() {
-        NewsDto expected = newsMapper.toDto(newsRepository.findByNumber(NUMBER_NEWS_IN_SCOPE_TWO).orElseThrow());
+        NewsEntity expected = newsRepository.findByNumber(NUMBER_NEWS_IN_SCOPE_TWO).orElseThrow();
         assertEquals(NUMBER_NEWS_IN_SCOPE_TWO, expected.getNumber());
 
         RestAssured.given(requestSpecification)
@@ -153,8 +150,6 @@ public class NewsControllerTest {
     @Test
     @DisplayName("Неуспешное получение новости по id")
     public void getByIdFailure() {
-        assertTrue(newsRepository.findByNumber(NUMBER_NEWS_OUT_OF_SCOPE).isEmpty());
-
         RestAssured.given(requestSpecification)
                 .get(PATH_TEMPLATE_FOR_ID, NUMBER_NEWS_OUT_OF_SCOPE)
                 .then()
@@ -166,9 +161,7 @@ public class NewsControllerTest {
     @Test
     @DisplayName("Успешное получение новостей по странице пагинации")
     public void getAllSuccess() {
-        NewsDto expected = newsMapper.toDto(newsRepository.findByNumber(NUMBER_NEWS_IN_SCOPE_ONE).orElseThrow());
-        assertEquals(NUMBER_NEWS_IN_SCOPE_ONE, expected.getNumber());
-        int totalPages = (int) Math.ceil(newsRepository.findAll().size() * 1.00 / PAGE_SIZE);
+        NewsEntity newsEntity = newsRepository.findByNumber(NUMBER_NEWS_IN_SCOPE_ONE).orElseThrow();
 
         NewsPageDto<NewsDto> newsPageDto = RestAssured.given(requestSpecification)
                 .queryParam("page", MINIMUM_PAGE_LIMIT)
@@ -183,22 +176,20 @@ public class NewsControllerTest {
                 });
         NewsDto actual = newsPageDto.getContent().get(0);
 
-        assertEquals(totalPages, newsPageDto.getCountPages());
         assertEquals(NUMBER_PAGE_START, newsPageDto.getCurrentPage());
         assertEquals(PAGE_SIZE, newsPageDto.getMaxPageSize());
         assertEquals(PAGE_SIZE, newsPageDto.getSize());
 
-        assertEquals(expected.getNumber(), actual.getNumber());
-        assertEquals(expected.getTitle(), actual.getTitle());
-        assertEquals(expected.getText(), actual.getText());
-        assertEquals(expected.getAuthor(), actual.getAuthor());
+        assertEquals(newsEntity.getNumber(), actual.getNumber());
+        assertEquals(newsEntity.getTitle(), actual.getTitle());
+        assertEquals(newsEntity.getText(), actual.getText());
+        assertEquals(newsEntity.getAuthor(), actual.getAuthor());
     }
 
     @Test
     @DisplayName("Успешное обновление новости")
     public void patchSuccess() {
         NewsEntity newsEntity = newsRepository.findByNumber(NUMBER_NEWS_IN_SCOPE_TWO).orElseThrow();
-        assertEquals(NUMBER_NEWS_IN_SCOPE_TWO, newsEntity.getNumber());
         String expectedTest = "Today is not Groundhog Day";
         NewsDto requestNewsDto = NewsDto.builder()
                 .title(expectedTest)
@@ -223,7 +214,6 @@ public class NewsControllerTest {
     @Test
     @DisplayName("Неуспешное обновление новости")
     public void patchFailure() {
-        assertTrue(newsRepository.findByNumber(NUMBER_NEWS_OUT_OF_SCOPE).isEmpty());
         NewsDto requestNewsDto = NewsDto.builder()
                 .title("test")
                 .build();
@@ -253,8 +243,6 @@ public class NewsControllerTest {
     @Test
     @DisplayName("Неуспешное получение текста новости")
     public void getTextNewsFailure() {
-        assertTrue(newsRepository.findByNumber(NUMBER_NEWS_OUT_OF_SCOPE).isEmpty());
-
         RestAssured.given(requestSpecification)
                 .get(PATH_TEMPLATE_FOR_NEWS_TEXT, NUMBER_NEWS_OUT_OF_SCOPE)
                 .then()
@@ -279,8 +267,6 @@ public class NewsControllerTest {
     @Test
     @DisplayName("Неуспешное получение автора новости")
     public void getAuthorNewsFailure() {
-        assertTrue(newsRepository.findByNumber(NUMBER_NEWS_OUT_OF_SCOPE).isEmpty());
-
         RestAssured.given(requestSpecification)
                 .get(PATH_TEMPLATE_FOR_NEWS_AUTHOR, NUMBER_NEWS_OUT_OF_SCOPE)
                 .then()

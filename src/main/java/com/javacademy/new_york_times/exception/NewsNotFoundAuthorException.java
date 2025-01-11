@@ -1,8 +1,10 @@
 package com.javacademy.new_york_times.exception;
 
+import com.javacademy.new_york_times.service.NewsErrorType;
+
 public class NewsNotFoundAuthorException extends RuntimeException  {
 
-    public NewsNotFoundAuthorException(String message) {
-        super(message);
+    public NewsNotFoundAuthorException(NewsErrorType message) {
+        super(message.getMessage());
     }
 }

@@ -31,7 +31,7 @@ public class NewsController {
     private final NewsService newsService;
 
     @PostMapping
-    @CacheEvict(value = "newsByPage", allEntries = true)
+    @CacheEvict(value = "news_by_page", allEntries = true)
     public ResponseEntity<String> createNewsItem(@RequestBody NewsDto newsDto) {
         try {
             newsService.save(newsDto);
@@ -44,8 +44,8 @@ public class NewsController {
     @DeleteMapping("/{id}")
     @Caching(
             evict = {
-                    @CacheEvict(value = "news"),
-                    @CacheEvict(value = "newsByPage", allEntries = true)
+                    @CacheEvict(value = "news_by_id"),
+                    @CacheEvict(value = "news_by_page", allEntries = true)
             }
     )
     public ResponseEntity<Boolean> deleteNewsById(@PathVariable Integer id) {
@@ -56,7 +56,7 @@ public class NewsController {
     }
 
     @GetMapping("/{id}")
-    @Cacheable(value = "news")
+    @Cacheable(value = "news_by_id")
     public ResponseEntity<?> getNewsById(@PathVariable Integer id) {
         try {
             return ResponseEntity.ok(newsService.findByNumber(id));
@@ -66,7 +66,7 @@ public class NewsController {
     }
 
     @GetMapping
-    @Cacheable(value = "newsByPage")
+    @Cacheable(value = "news_by_page")
     public ResponseEntity<NewsPageDto<NewsDto>> getNews(@RequestParam Integer page) {
         return ResponseEntity.ok(newsService.findAll(page));
     }
@@ -74,8 +74,8 @@ public class NewsController {
     @PatchMapping("/{id}")
     @Caching(
             evict = {
-                    @CacheEvict(value = "news", key = "#id"),
-                    @CacheEvict(value = "newsByPage", allEntries = true)
+                    @CacheEvict(value = "news_by_id", key = "#id"),
+                    @CacheEvict(value = "news_by_page", allEntries = true)
             }
     )
     public ResponseEntity<String> patchNews(@PathVariable Integer id, @RequestBody NewsDto newDto) {
